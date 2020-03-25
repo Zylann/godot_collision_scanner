@@ -1,5 +1,5 @@
+tool
 extends Control
-
 
 onready var _texture_rect := $TextureRect as TextureRect
 
@@ -14,6 +14,7 @@ var _cell_y := 0
 var _cell_size := BASE_CELL_SIZE
 var _done = false
 var _camera : Camera
+var _prev_camera_transform : Transform
 
 
 func _init():
@@ -24,18 +25,24 @@ func _init():
 func set_camera(camera: Camera):
 	assert(camera != null)
 	if camera != _camera:
-		print("Setting camera")
+		print("Setting new camera")
 		_camera = camera
+		_prev_camera_transform = _camera.global_transform
 		_restart()
 
 
 func _reset():
+	set_physics_process(false)
 	if _texture_rect == null:
+		return
+	if rect_size.x == 0 or rect_size.y == 0:
+		print("Invalid rect size ", rect_size)
 		return
 	_cell_x = 0
 	_cell_y = 0
 	_cell_size = BASE_CELL_SIZE
 	if _image == null or _image.get_size() != rect_size:
+		print("Creating image ", rect_size)
 		_image = Image.new()
 		_image.create(rect_size.x, rect_size.y, false, Image.FORMAT_RGB8)
 	_image.fill(Color(0, 0, 0))
@@ -44,7 +51,6 @@ func _reset():
 	_texture.create_from_image(_image, 0)
 	_texture_rect.texture = _texture
 	_done = false
-	set_physics_process(false)
 
 
 func _restart():
@@ -53,6 +59,9 @@ func _restart():
 
 
 func _notification(what):
+	if is_in_edited_scene(self):
+		return
+		
 	match what:
 		NOTIFICATION_VISIBILITY_CHANGED:
 			if is_visible_in_tree():
@@ -69,6 +78,11 @@ func _physics_process(delta):
 		print("Camera is null, stopping")
 		_camera = null
 		set_physics_process(false)
+		return
+	
+	if _camera.global_transform != _prev_camera_transform:
+		_prev_camera_transform = _camera.global_transform
+		_restart()
 		return
 	
 	var world := _camera.get_world()
@@ -88,7 +102,8 @@ func _physics_process(delta):
 		
 		var hit = space_state.intersect_ray(ray_origin, ray_dir * RAY_LENGTH)
 		if not hit.empty():
-			var rect = Rect2(_cell_x * _cell_size, _cell_y * _cell_size, _cell_size, _cell_size)
+			var rect = Rect2(
+				_cell_x * _cell_size, _cell_y * _cell_size, _cell_size, _cell_size)
 			var n = 0.5 * hit.normal + Vector3(0.5, 0.5, 0.5)
 			color = Color(n.x, n.y, n.z, 1.0)
 
@@ -120,10 +135,11 @@ func _physics_process(delta):
 				
 		if done_row:
 			var y = prev_cell_y * prev_cell_size
-			VisualServer.texture_set_data_partial(
-				_texture.get_rid(), _image, 0, y, _image.get_width(), prev_cell_size, 0, y, 0, 0)
+			VisualServer.texture_set_data_partial(_texture.get_rid(), 
+				_image, 0, y, _image.get_width(), prev_cell_size, 0, y, 0, 0)
 		
 	if _done:
+		print("Done")
 		set_physics_process(false)
 	
 	
@@ -156,4 +172,13 @@ static func _plot(im: Image, cx: int, cy: int, cell_size: int, color: Color):
 		for y in range(cy_min, cy_max):
 			for x in range(cx_min, cx_max):
 				im.set_pixel(x, y, color)
+
+
+static func is_in_edited_scene(node):
+	if not node.is_inside_tree():
+		return false
+	var edited_scene = node.get_tree().edited_scene_root
+	if node == edited_scene:
+		return true
+	return edited_scene != null and edited_scene.is_a_parent_of(node)
 
