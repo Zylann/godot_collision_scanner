@@ -100,7 +100,7 @@ func _physics_process(delta):
 
 		var color = Color(0, 0, 0)
 		
-		var hit = space_state.intersect_ray(ray_origin, ray_dir * RAY_LENGTH)
+		var hit = space_state.intersect_ray(ray_origin, ray_origin + ray_dir * RAY_LENGTH)
 		if not hit.empty():
 			var rect = Rect2(
 				_cell_x * _cell_size, _cell_y * _cell_size, _cell_size, _cell_size)
