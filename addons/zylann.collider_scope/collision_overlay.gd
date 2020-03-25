@@ -73,16 +73,20 @@ func _notification(what):
 			_restart()
 
 
+func _process(delta):
+	if _camera == null or not is_instance_valid(_camera):
+		return
+	if _camera.global_transform != _prev_camera_transform:
+		_prev_camera_transform = _camera.global_transform
+		_restart()
+		return
+
+
 func _physics_process(delta):
 	if _camera == null or not is_instance_valid(_camera):
 		print("Camera is null, stopping")
 		_camera = null
 		set_physics_process(false)
-		return
-	
-	if _camera.global_transform != _prev_camera_transform:
-		_prev_camera_transform = _camera.global_transform
-		_restart()
 		return
 	
 	var world := _camera.get_world()
