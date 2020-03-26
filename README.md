@@ -1,8 +1,10 @@
-Collision viewer for Godot Engine
+Collision scanner for Godot Engine
 ======================================
 
 This is a raycast-based collision viewer, which can be used in the editor to directly visualise collidable surfaces. It is very close to the real colliders than the usual previews, so it can be used to debug said previews.
 Brute-forcing that many raycasts can be a bit slow, but results are usually visible after a few seconds.
+
+
 
 Installation
 --------------
