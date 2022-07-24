@@ -20,7 +20,8 @@ func _enter_tree():
 
 
 func _exit_tree():
-	_overlay.queue_free()
+	if _overlay != null:
+		_overlay.queue_free()
 
 
 func handles(obj):
