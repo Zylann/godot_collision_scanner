@@ -15,6 +15,7 @@ var _cell_size := BASE_CELL_SIZE
 var _done = false
 var _camera : Camera3D
 var _prev_camera_transform : Transform3D
+var _restart_when_camera_transform_changes := true
 
 
 func _init():
@@ -76,10 +77,15 @@ func _notification(what):
 func _process(delta):
 	if _camera == null or not is_instance_valid(_camera):
 		return
-	if _camera.global_transform != _prev_camera_transform:
+	if _restart_when_camera_transform_changes and \
+	not _camera.global_transform.is_equal_approx(_prev_camera_transform):
 		_prev_camera_transform = _camera.global_transform
 		_restart()
 		return
+
+
+func set_restart_when_camera_transform_changes(enabled: bool):
+	_restart_when_camera_transform_changes = enabled
 
 
 func _physics_process(delta):
