@@ -95,6 +95,11 @@ func _physics_process(delta):
 		set_physics_process(false)
 		return
 	
+	# This might happen?
+	if not is_physics_processing():
+		push_warning("is_physics_processing() == false but Godot still called _physics_process??")
+		return
+	
 	var world := _camera.get_world_3d()
 	var space_state = world.direct_space_state
 	
