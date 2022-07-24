@@ -1,12 +1,11 @@
 @tool
 extends Control
 
-@onready var _texture_rect := $TextureRect as TextureRect
-
 const BASE_CELL_SIZE = 8
 const RAY_LENGTH = 4000.0
 const FRAME_TIME_BUDGET_MS = 6
 
+var _texture_rect : TextureRect
 var _image : Image
 var _texture : ImageTexture
 var _cell_x := 0
@@ -20,7 +19,13 @@ var _restart_when_camera_transform_changes := true
 
 func _init():
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	set_anchors_preset(Control.PRESET_WIDE)
 	set_physics_process(false)
+
+	_texture_rect = TextureRect.new()
+	_texture_rect.set_anchors_preset(Control.PRESET_WIDE)
+	_texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_texture_rect)
 
 
 func set_camera(camera: Camera3D):
@@ -34,8 +39,6 @@ func set_camera(camera: Camera3D):
 
 func _reset():
 	set_physics_process(false)
-	if _texture_rect == null:
-		return
 	if size.x == 0 or size.y == 0:
 		print("Invalid rect size ", size)
 		return
