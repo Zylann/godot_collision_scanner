@@ -1,4 +1,4 @@
-tool
+@tool
 extends EditorPlugin
 
 const CollisionOverlay = preload("./collision_overlay.tscn")
@@ -12,7 +12,7 @@ func _enter_tree():
 	if parent == null:
 		print("Could not find 3D viewport container")
 		return
-	_overlay = CollisionOverlay.instance()
+	_overlay = CollisionOverlay.instantiate()
 	parent.add_child(_overlay)
 	parent.move_child(_overlay, 1)
 	# As per https://github.com/godotengine/godot/issues/6869
@@ -35,9 +35,9 @@ func forward_spatial_gui_input(camera, event):
 
 func get_3d_viewport_container() -> Control:
 	# Yes, this is a VBoxContainer, and it covers more than the actual 3D view
-	var vb = get_editor_interface().get_editor_viewport()
+	var vb = get_editor_interface().get_editor_main_control()
 	# So we have to dig for a non-exposed node type...
-	return find_first_node(vb, "SpatialEditorViewport") as Control
+	return find_first_node(vb, "Node3DEditorViewport") as Control
 
 
 static func find_first_node(node: Node, klass_name: String) -> Node:

@@ -1,7 +1,7 @@
-tool
+@tool
 extends Control
 
-onready var _texture_rect := $TextureRect as TextureRect
+@onready var _texture_rect := $TextureRect as TextureRect
 
 const BASE_CELL_SIZE = 8
 const RAY_LENGTH = 4000.0
@@ -13,8 +13,8 @@ var _cell_x := 0
 var _cell_y := 0
 var _cell_size := BASE_CELL_SIZE
 var _done = false
-var _camera : Camera
-var _prev_camera_transform : Transform
+var _camera : Camera3D
+var _prev_camera_transform : Transform3D
 
 
 func _init():
@@ -22,7 +22,7 @@ func _init():
 	set_physics_process(false)
 
 
-func set_camera(camera: Camera):
+func set_camera(camera: Camera3D):
 	assert(camera != null)
 	if camera != _camera:
 		print("Setting new camera")
@@ -35,20 +35,20 @@ func _reset():
 	set_physics_process(false)
 	if _texture_rect == null:
 		return
-	if rect_size.x == 0 or rect_size.y == 0:
-		print("Invalid rect size ", rect_size)
+	if size.x == 0 or size.y == 0:
+		print("Invalid rect size ", size)
 		return
 	_cell_x = 0
 	_cell_y = 0
 	_cell_size = BASE_CELL_SIZE
-	if _image == null or _image.get_size() != rect_size:
-		print("Creating image ", rect_size)
+	if _image == null or _image.get_size() != size:
+		print("Creating image ", size)
 		_image = Image.new()
-		_image.create(rect_size.x, rect_size.y, false, Image.FORMAT_RGB8)
+		_image.create(size.x, size.y, false, Image.FORMAT_RGB8)
 	_image.fill(Color(0, 0, 0))
 	if _texture == null:
 		_texture = ImageTexture.new()
-	_texture.create_from_image(_image, 0)
+	_texture = ImageTexture.create_from_image(_image)
 	_texture_rect.texture = _texture
 	_done = false
 
@@ -89,31 +89,32 @@ func _physics_process(delta):
 		set_physics_process(false)
 		return
 	
-	var world := _camera.get_world()
+	var world := _camera.get_world_3d()
 	var space_state = world.direct_space_state
 	
 	var cell_count_x = _image.get_width() / _cell_size
 	var cell_count_y = _image.get_height() / _cell_size
 	
-	var time_before = OS.get_ticks_msec()
+	var time_before = Time.get_ticks_msec()
 	
-	while (not _done) and (OS.get_ticks_msec() - time_before) < FRAME_TIME_BUDGET_MS:
+	while (not _done) and (Time.get_ticks_msec() - time_before) < FRAME_TIME_BUDGET_MS:
 		var pixel_pos = (Vector2(_cell_x + 0.5, _cell_y + 0.5) * _cell_size).floor()
 		var ray_origin = _camera.project_ray_origin(pixel_pos)
 		var ray_dir = _camera.project_ray_normal(pixel_pos)
 
 		var color = Color(0, 0, 0)
 		
-		var hit = space_state.intersect_ray(ray_origin, ray_origin + ray_dir * RAY_LENGTH)
-		if not hit.empty():
+		var ray := PhysicsRayQueryParameters3D.new()
+		ray.from = ray_origin
+		ray.to = ray_origin + ray_dir * RAY_LENGTH
+		var hit := space_state.intersect_ray(ray)
+		if not hit.is_empty():
 			var rect = Rect2(
 				_cell_x * _cell_size, _cell_y * _cell_size, _cell_size, _cell_size)
 			var n = 0.5 * hit.normal + Vector3(0.5, 0.5, 0.5)
 			color = Color(n.x, n.y, n.z, 1.0)
 
-		_image.lock()
 		_plot(_image, _cell_x, _cell_y, _cell_size, color)
-		_image.unlock()	
 
 		var done_row = false
 		var prev_cell_y = _cell_y
@@ -139,14 +140,17 @@ func _physics_process(delta):
 				
 		if done_row:
 			var y = prev_cell_y * prev_cell_size
-			VisualServer.texture_set_data_partial(_texture.get_rid(), 
-				_image, 0, y, _image.get_width(), prev_cell_size, 0, y, 0, 0)
+			# TODO Optimize: Godot 4 did not implement a way to update an ImageTexture sub-region
+#			VisualServer.texture_set_data_partial(_texture.get_rid(), 
+#				_image, 0, y, _image.get_width(), prev_cell_size, 0, y, 0, 0)
+			_texture.update(_image)
+			_texture_rect.texture = _texture
 		
 	if _done:
 		print("Done")
 		set_physics_process(false)
-	
-	
+
+
 static func _plot(im: Image, cx: int, cy: int, cell_size: int, color: Color):
 	if cell_size == 1:
 		im.set_pixel(cx, cy, color)
@@ -178,11 +182,11 @@ static func _plot(im: Image, cx: int, cy: int, cell_size: int, color: Color):
 				im.set_pixel(x, y, color)
 
 
-static func is_in_edited_scene(node):
+static func is_in_edited_scene(node: Node) -> bool:
 	if not node.is_inside_tree():
 		return false
-	var edited_scene = node.get_tree().edited_scene_root
+	var edited_scene := node.get_tree().edited_scene_root
 	if node == edited_scene:
 		return true
-	return edited_scene != null and edited_scene.is_a_parent_of(node)
+	return edited_scene != null and edited_scene.is_ancestor_of(node)
 
