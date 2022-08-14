@@ -45,7 +45,7 @@ func _reset():
 	_cell_x = 0
 	_cell_y = 0
 	_cell_size = BASE_CELL_SIZE
-	if _image == null or _image.get_size() != size:
+	if _image == null or _image.get_size() != Vector2i(size):
 		print("Creating image ", size)
 		_image = Image.new()
 		_image.create(size.x, size.y, false, Image.FORMAT_RGB8)
