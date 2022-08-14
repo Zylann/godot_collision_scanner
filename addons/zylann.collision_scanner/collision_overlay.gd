@@ -19,11 +19,11 @@ var _restart_when_camera_transform_changes := true
 
 func _init():
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	set_anchors_preset(Control.PRESET_WIDE)
+	set_anchors_preset(Control.PRESET_FULL_RECT)
 	set_physics_process(false)
 
 	_texture_rect = TextureRect.new()
-	_texture_rect.set_anchors_preset(Control.PRESET_WIDE)
+	_texture_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_texture_rect)
 
