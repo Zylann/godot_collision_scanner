@@ -11,12 +11,37 @@ Example of the plugin in action, here showing a heightmap collider.
 A bug with CSGBox, where collision doesn't follow after moving the object.
 
 
-Installation
---------------
+Install
+---------
 
 This is a regular editor plugin.
 Copy the contents of `addons/zylann.collision_viewer` into the same folder in your project.
 
+
+Use in editor
+----------------
+
 To start using it, turn the plugin on in your Project Settings. This will make the 3D view darker, and will start scanning for collidable surfaces.
 When you are done inspecting, turn off the plugin.
+
+NOTE: in Godot 4, so far, collisions cannot be checked in the editor, so the overlay will always be black.
+
+
+Use in game
+------------
+
+```gdscript
+const CollisionScannerScene = preload("res://addons/zylann.collision_scanner.tscn")
+
+var _scanner
+
+func enable_collision_scanner():
+	_scanner = CollisionScannerScene.instantiate()
+	_scanner.set_camera(get_node("Path/To/YourGameCamera"))
+	add_child(_scanner)
+
+
+func disable_collision_scanner():
+	_scanner.queue_free()
+```
 
