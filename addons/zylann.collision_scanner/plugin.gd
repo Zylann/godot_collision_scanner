@@ -36,7 +36,7 @@ func forward_spatial_gui_input(camera, event):
 
 func get_3d_viewport_container() -> Control:
 	# Yes, this is a VBoxContainer, and it covers more than the actual 3D view
-	var vb = get_editor_interface().get_editor_main_control()
+	var vb = get_editor_interface().get_editor_main_screen()
 	# So we have to dig for a non-exposed node type...
 	return find_first_node(vb, "Node3DEditorViewport") as Control
 
