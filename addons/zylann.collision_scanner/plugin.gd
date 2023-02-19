@@ -13,6 +13,7 @@ func _enter_tree():
 		print("Could not find 3D viewport container")
 		return
 	_overlay = CollisionOverlay.instantiate()
+	_overlay.modulate = Color(1,1,1,0.9)
 	parent.add_child(_overlay)
 	parent.move_child(_overlay, 1)
 	# As per https://github.com/godotengine/godot/issues/6869
