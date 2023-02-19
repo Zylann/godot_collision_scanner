@@ -28,9 +28,9 @@ func handles(obj):
 	return true
 
 
-func forward_spatial_gui_input(camera, event):
+func _forward_3d_gui_input(viewport_camera, event):
 	if _overlay != null:
-		_overlay.set_camera(camera)
+		_overlay.set_camera(viewport_camera)
 	return false
 
 
